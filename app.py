@@ -18,10 +18,25 @@ connect_db(app)
 # debug
 debug = DebugToolbarExtension(app)
 
-@app.route('/api/v1/cupcakes')
+# GET /api/cupcakes
+@app.route("/api/v1/cupcakes")
 def get_cupcakes():
     """ Get all cupcakes """
-    cupcakes = Cupcake.query.all_or_404()
-    cupcakes = {k: v for k,v in cupcakes}
-    json_resp = jsonify(cupcakes=cupcakes)
+    cupcakes = Cupcake.query.all()
+    # serialize cupcake to valid json
+    json_resp = jsonify(cupcakes=[ck.serialize_cupcake() for ck in cupcakes])
     return (json_resp, 200)
+
+# GET /api/cupcakes/[cupcake-id]
+@app.route("/api/v1/cupcakes/<int:cupcake_id>")
+def get_cupcake_details(cupcake_id):
+    """ Get cupcake details """
+    cupcake = Cupcake.query.get(cupcake_id)
+    # does cupcake exist
+    if not cupcake:
+        return (jsonify(message=f"cupcake id {cupcake_id} does not exist"), 404)
+    # cupcake exist
+    json_resp = jsonify(cupcake=cupcake.serialize_cupcake())
+    return (json_resp, 200)
+
+# POST /api/cupcakes
