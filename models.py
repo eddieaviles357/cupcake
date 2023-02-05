@@ -23,4 +23,4 @@ class Cupcake(db.Model):
 
     def __repr__(self):
         """ Cupcake Representation """
-        return f"<Cupcake >"
+        return f"<Cupcake id={self.id}, flavor={self.flavor}, rating={self.rating}, image={self.image[0:15]}>"
