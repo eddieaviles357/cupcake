@@ -23,7 +23,7 @@ debug = DebugToolbarExtension(app)
 def get_cupcakes():
     """ Get all cupcakes """
     cupcakes = Cupcake.query.all()
-    # serialize cupcake to valid json
+    # serialize cupcake and send
     json_resp = jsonify(cupcakes=[ck.serialize_cupcake() for ck in cupcakes])
     return (json_resp, 200)
 
@@ -35,8 +35,24 @@ def get_cupcake_details(cupcake_id):
     # does cupcake exist
     if not cupcake:
         return (jsonify(message=f"cupcake id {cupcake_id} does not exist"), 404)
-    # cupcake exist
+    # cupcake exist => serialize and send
     json_resp = jsonify(cupcake=cupcake.serialize_cupcake())
     return (json_resp, 200)
 
 # POST /api/cupcakes
+@app.route("/api/v1/cupcake", methods=["POST"])
+def create_cupcake():
+    """ Create cupcake """
+    flavor = request.json['flavor']
+    size = request.json['size']
+    # convert to float
+    rating = float(request.json['rating'])
+    image = request.json['image']
+    # create cupcake
+    cupcake = Cupcake(flavor=flavor, size=size, rating=rating, image=image)
+    # add to database
+    db.session.add(cupcake)
+    db.session.commit()
+    # serialize cupcake
+    serialized_cupcake = cupcake.serialize_cupcake()
+    return (jsonify(cupcake=serialized_cupcake), 200)
