@@ -19,7 +19,7 @@ connect_db(app)
 debug = DebugToolbarExtension(app)
 
 # GET /api/cupcakes
-@app.route("/api/v1/cupcakes")
+@app.route("/api/cupcakes")
 def get_cupcakes():
     """ Get all cupcakes """
     cupcakes = Cupcake.query.all()
@@ -28,7 +28,7 @@ def get_cupcakes():
     return (json_resp, 200)
 
 # GET /api/cupcakes/[cupcake-id]
-@app.route("/api/v1/cupcakes/<int:cupcake_id>")
+@app.route("/api/cupcakes/<int:cupcake_id>")
 def get_cupcake_details(cupcake_id):
     """ Get cupcake details """
     cupcake = Cupcake.query.get(cupcake_id)
@@ -40,16 +40,17 @@ def get_cupcake_details(cupcake_id):
     return (json_resp, 200)
 
 # POST /api/cupcakes
-@app.route("/api/v1/cupcake", methods=["POST"])
+@app.route("/api/cupcake", methods=["POST"])
 def create_cupcake():
     """ Create cupcake """
-    flavor = request.json['flavor']
-    size = request.json['size']
-    # convert to float
-    rating = float(request.json['rating'])
-    image = request.json['image']
+    req_cupcake = {
+        "flavor": request.json['flavor'],
+        "size": request.json['size'],
+        "rating": float(request.json['rating']),
+        "image": request.json['image']
+    }
     # create cupcake
-    cupcake = Cupcake(flavor=flavor, size=size, rating=rating, image=image)
+    cupcake = Cupcake(**req_cupcake)
     # add to database
     db.session.add(cupcake)
     db.session.commit()
