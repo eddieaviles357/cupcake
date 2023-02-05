@@ -92,7 +92,7 @@ class CupcakeViewsTestCase(TestCase):
 
     def test_create_cupcake(self):
         with app.test_client() as client:
-            url = "/api/cupcake"
+            url = "/api/cupcakes"
             resp = client.post(url, json=CUPCAKE_DATA_2)
 
             self.assertEqual(resp.status_code, 201)
