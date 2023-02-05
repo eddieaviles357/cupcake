@@ -2,16 +2,10 @@ from unittest import TestCase
 
 from app import app
 from models import db, Cupcake
-
-# Use test database and don't clutter tests with SQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes_test'
-app.config['SQLALCHEMY_ECHO'] = False
-
-# Make Flask errors be real errors, rather than HTML pages with error info
-app.config['TESTING'] = True
-
-db.drop_all()
-db.create_all()
+# avoid sorted keys
+app.json.sort_keys
+# db.drop_all()
+# db.create_all()
 
 
 CUPCAKE_DATA = {
@@ -34,19 +28,31 @@ class CupcakeViewsTestCase(TestCase):
 
     def setUp(self):
         """Make demo data."""
+        self.client = app.test_client()
+        app.config.update({
+            "TESTING": True,
+            "SQLALCHEMY_ECHO": False,
+            "SQLALCHEMY_DATABASE_URI": "postgresql:///cupcakes_test",
+            "DEBUG_TB_HOSTS": ["dont-show-debug-toolbar"]
+        })
+                # create an app context
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
 
-        Cupcake.query.delete()
+            Cupcake.query.delete()
 
-        cupcake = Cupcake(**CUPCAKE_DATA)
-        db.session.add(cupcake)
-        db.session.commit()
+            cupcake = Cupcake(**CUPCAKE_DATA)
+            db.session.add(cupcake)
+            db.session.commit()
 
-        self.cupcake = cupcake
+            self.cupcake = cupcake
+            print(cupcake, '\n\n\n\n\n')
 
     def tearDown(self):
         """Clean up fouled transactions."""
-
-        db.session.rollback()
+        with app.app_context():
+            db.session.rollback()
 
     def test_list_cupcakes(self):
         with app.test_client() as client:
@@ -61,7 +67,7 @@ class CupcakeViewsTestCase(TestCase):
                         "id": self.cupcake.id,
                         "flavor": "TestFlavor",
                         "size": "TestSize",
-                        "rating": 5,
+                        "rating": float(5),
                         "image": "http://test.com/cupcake.jpg"
                     }
                 ]
@@ -79,14 +85,14 @@ class CupcakeViewsTestCase(TestCase):
                     "id": self.cupcake.id,
                     "flavor": "TestFlavor",
                     "size": "TestSize",
-                    "rating": 5,
+                    "rating": float(5),
                     "image": "http://test.com/cupcake.jpg"
                 }
             })
 
     def test_create_cupcake(self):
         with app.test_client() as client:
-            url = "/api/cupcakes"
+            url = "/api/cupcake"
             resp = client.post(url, json=CUPCAKE_DATA_2)
 
             self.assertEqual(resp.status_code, 201)
@@ -101,7 +107,7 @@ class CupcakeViewsTestCase(TestCase):
                 "cupcake": {
                     "flavor": "TestFlavor2",
                     "size": "TestSize2",
-                    "rating": 10,
+                    "rating": float(10),
                     "image": "http://test.com/cupcake2.jpg"
                 }
             })
