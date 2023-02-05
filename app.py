@@ -56,4 +56,4 @@ def create_cupcake():
     db.session.commit()
     # serialize cupcake
     serialized_cupcake = cupcake.serialize_cupcake()
-    return (jsonify(cupcake=serialized_cupcake), 200)
+    return (jsonify(cupcake=serialized_cupcake), 201)
