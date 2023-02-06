@@ -4,8 +4,6 @@ from app import app
 from models import db, Cupcake
 # avoid sorted keys
 app.json.sort_keys
-# db.drop_all()
-# db.create_all()
 
 
 CUPCAKE_DATA = {
@@ -32,7 +30,7 @@ class CupcakeViewsTestCase(TestCase):
         app.config.update({
             "TESTING": True,
             "SQLALCHEMY_ECHO": False,
-            "SQLALCHEMY_DATABASE_URI": "postgresql:///cupcakes_test",
+            "SQLALCHEMY_DATABASE_URI": "postgresql:///cupcake_test",
             "DEBUG_TB_HOSTS": ["dont-show-debug-toolbar"]
         })
                 # create an app context
@@ -40,7 +38,7 @@ class CupcakeViewsTestCase(TestCase):
             db.drop_all()
             db.create_all()
 
-            Cupcake.query.delete()
+            
 
             cupcake = Cupcake(**CUPCAKE_DATA)
             db.session.add(cupcake)
@@ -48,6 +46,7 @@ class CupcakeViewsTestCase(TestCase):
 
             self.cupcake = cupcake
             print(cupcake, '\n\n\n\n\n')
+            Cupcake.query.delete()
 
     def tearDown(self):
         """Clean up fouled transactions."""
