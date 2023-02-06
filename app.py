@@ -27,6 +27,8 @@ def get_cupcakes():
     json_resp = jsonify(cupcakes=[ck.serialize_cupcake() for ck in cupcakes])
     return (json_resp, 200)
 
+
+
 # GET /api/cupcakes/[cupcake-id]
 @app.route("/api/cupcakes/<int:cupcake_id>")
 def get_cupcake_details(cupcake_id):
@@ -39,8 +41,10 @@ def get_cupcake_details(cupcake_id):
     json_resp = jsonify(cupcake=cupcake.serialize_cupcake())
     return (json_resp, 200)
 
+
+
 # POST /api/cupcakes
-@app.route("/api/cupcake", methods=["POST"])
+@app.route("/api/cupcakes", methods=["POST"])
 def create_cupcake():
     """ Create cupcake """
     req_cupcake = {
@@ -57,3 +61,26 @@ def create_cupcake():
     # serialize cupcake
     serialized_cupcake = cupcake.serialize_cupcake()
     return (jsonify(cupcake=serialized_cupcake), 201)
+
+
+
+# PATCH /api/cupcakes/[cupcake-id]
+@app.route("/api/cupcakes/<int:cupcake_id>", methods=["PATCH"])
+def patch_cupcake(cupcake_id):
+    """ Upcate cupcake details """
+    cupcake = Cupcake.query.get(cupcake_id)
+    if not cupcake:
+        return (jsonify(message=f"cupcake id {cupcake_id} does not exist"), 404)
+    req_json = request.json
+    update_cupcake(cupcake, req_json)
+    return (jsonify(cupcake=cupcake.serialize_cupcake()), 200)
+
+
+# util functions
+def update_cupcake(c_cake, val):
+    """ Update cupcake in db """
+    c_cake.flavor = val["flavor"]
+    c_cake.size = val["size"]
+    c_cake.rating = float(val["rating"])
+    c_cake.image = val["image"]
+    db.session.commit()
