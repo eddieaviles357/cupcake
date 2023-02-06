@@ -76,6 +76,21 @@ def patch_cupcake(cupcake_id):
     return (jsonify(cupcake=cupcake.serialize_cupcake()), 200)
 
 
+
+# DELETE /api/cupcakes/[cupcake-id]
+@app.route("/api/cupcakes/<int:cupcake_id>", methods=["DELETE"])
+def delete_cupcake(cupcake_id):
+    """ Delete cupcake by id """
+    cupcake = Cupcake.query.get(cupcake_id)
+    # no cupcake exist so send 404
+    if not cupcake:
+        return (jsonify(message="Enter a valid cupcake id"), 404)
+    # cupcake exist now delete
+    db.session.delete(cupcake)
+    db.session.commit()
+
+    return (jsonify(message='deleted'), 200)
+
 # util functions
 def update_cupcake(c_cake, val):
     """ Update cupcake in db """
