@@ -1,11 +1,11 @@
 -- from the terminal run:
 -- psql < cupcake.sql
 
-DROP DATABASE IF EXISTS cupcake;
+DROP DATABASE IF EXISTS cupcake_test;
 
-CREATE DATABASE cupcake;
+CREATE DATABASE cupcake_test;
 
-\c cupcake
+\c cupcake_test
 
 CREATE TABLE cupcakes
 (
