@@ -1,5 +1,5 @@
 """Flask app for Cupcakes"""
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, Cupcake
 
@@ -17,6 +17,12 @@ app.config.update(
 connect_db(app)
 # debug
 debug = DebugToolbarExtension(app)
+
+
+@app.route('/')
+def home_page():
+    """ Home page """
+    return render_template("index.html")
 
 # GET /api/cupcakes
 @app.route("/api/cupcakes")
