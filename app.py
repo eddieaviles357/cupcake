@@ -66,8 +66,8 @@ def create_cupcake():
 
 # PATCH /api/cupcakes/[cupcake-id]
 @app.route("/api/cupcakes/<int:cupcake_id>", methods=["PATCH"])
-def patch_cupcake(cupcake_id):
-    """ Upcate cupcake details """
+def update_cupcake(cupcake_id):
+    """ Update cupcake details """
     cupcake = Cupcake.query.get(cupcake_id)
     if not cupcake:
         return (jsonify(message=f"cupcake id {cupcake_id} does not exist"), 404)
