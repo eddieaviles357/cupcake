@@ -1,3 +1,4 @@
+# python3 -m unittest -v tests
 from unittest import TestCase
 
 from app import app
@@ -5,6 +6,7 @@ from models import db, Cupcake
 # avoid sorted keys
 app.json.sort_keys
 
+URL_PATH = "/api/cupcakes"
 
 CUPCAKE_DATA = {
     "flavor": "TestFlavor",
@@ -38,15 +40,15 @@ class CupcakeViewsTestCase(TestCase):
             db.drop_all()
             db.create_all()
 
-            
-
             cupcake = Cupcake(**CUPCAKE_DATA)
             db.session.add(cupcake)
             db.session.commit()
 
             self.cupcake = cupcake
-            print(cupcake, '\n\n\n\n\n')
+            
+            print('\n',cupcake)
             Cupcake.query.delete()
+
 
     def tearDown(self):
         """Clean up fouled transactions."""
@@ -54,8 +56,8 @@ class CupcakeViewsTestCase(TestCase):
             db.session.rollback()
 
     def test_list_cupcakes(self):
-        with app.test_client() as client:
-            resp = client.get("/api/cupcakes")
+        with self.client:
+            resp = self.client.get(URL_PATH)
 
             self.assertEqual(resp.status_code, 200)
 
@@ -73,9 +75,10 @@ class CupcakeViewsTestCase(TestCase):
             })
 
     def test_get_cupcake(self):
-        with app.test_client() as client:
-            url = f"/api/cupcakes/{self.cupcake.id}"
-            resp = client.get(url)
+        """ Test for creating cupcake """
+        with self.client:
+            url = f"{URL_PATH}/{self.cupcake.id}"
+            resp = self.client.get(url)
 
             self.assertEqual(resp.status_code, 200)
             data = resp.json
@@ -90,9 +93,9 @@ class CupcakeViewsTestCase(TestCase):
             })
 
     def test_create_cupcake(self):
-        with app.test_client() as client:
-            url = "/api/cupcakes"
-            resp = client.post(url, json=CUPCAKE_DATA_2)
+        """ Test for creating cupcake """
+        with self.client:
+            resp = self.client.post(URL_PATH, json=CUPCAKE_DATA_2)
 
             self.assertEqual(resp.status_code, 201)
 
@@ -112,3 +115,41 @@ class CupcakeViewsTestCase(TestCase):
             })
 
             self.assertEqual(Cupcake.query.count(), 2)
+
+    def test_update_cupcake(self):
+        """ Test for updating cupcake """
+        DATA = { 
+                "flavor": "raspberry",
+                "size": "xsm",
+                "rating": 3.0,
+                "image": "http://raspberry"
+                }
+                
+        with self.client:
+            resp = self.client.patch(f"{URL_PATH}/{self.cupcake.id}", json=DATA)
+            data = resp.json
+            # get data from db which is the updated cupcake
+            with app.app_context():
+                cupcake = Cupcake.query.get_or_404(self.cupcake.id)
+                self.assertEqual(cupcake.serialize_cupcake(), {
+                        "flavor": DATA['flavor'],
+                        "id": self.cupcake.id,
+                        "image": DATA['image'],
+                        "rating": DATA['rating'],
+                        "size": DATA['size']
+                    }
+                )
+
+    def test_delete_cupcake(self):
+        """ Test for deleting cupcake """
+        with self.client:
+            with app.app_context():
+                resp = self.client.delete(f"{URL_PATH}/{self.cupcake.id}")
+                ck = Cupcake.query.get(1)
+                self.assertEqual(resp.status_code, 200)
+                # no cupcake found will return None
+                self.assertEqual(None, ck)
+                # hit delete route again this time cupcake_id will not exist
+                resp = self.client.delete(f"{URL_PATH}/{self.cupcake.id}")
+                # cupcake is not in database and should return 404 status code
+                self.assertEqual(resp.status_code, 404)
